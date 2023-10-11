@@ -1,18 +1,19 @@
 import React from 'react'
+import './TableContents.css'
 
 function TableContents({fileContents}) {
-
-    if (!fileContents){
-        return (
-            <div>
-                Not able to extract document contents
-            </div>
-        )
+    if (fileContents.length == 0){
+        return
+        // return (
+        //     <div>
+        //         Not able to extract document contents
+        //     </div>
+        // )
     }
 
     return (
         <div>
-        <table>
+        <table className="table">
             <thead>
             <tr>
                 <th>Invoice number</th>
@@ -28,41 +29,43 @@ function TableContents({fileContents}) {
             </tr>
             </thead>
             <tbody>
-                { fileContents.map((name, content) => (
-                <tr key={name}>
-                    <td>
-                        <span>{content["Invoice number"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Provider name"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Customer name"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Tax%"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Tax amount"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Net amount"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Gross Amount"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Currency"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Invoice date"]}</span>
-                    </td>
-                    <td>
-                        <span>{content["Due date"]}</span>
-                    </td>
-                </tr>
-
-                ))}
+                { Object.keys(fileContents).forEach((filename) => {
+                    console.log(filename)
+                    return (
+                        <tr key={filename}>
+                            <td>
+                                <span>{fileContents[filename]["Invoice number"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Provider name"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Customer name"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Tax%"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Tax amount"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Net amount"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Gross Amount"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Currency"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Invoice date"]}</span>
+                            </td>
+                            <td>
+                                <span>{fileContents[filename]["Due date"]}</span>
+                            </td>
+                        </tr>
+                    )
+                })}
             </tbody>
         </table>
         </div>
