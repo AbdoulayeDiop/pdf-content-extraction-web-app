@@ -1,95 +1,102 @@
-import {React, useState} from 'react';
+import {React, useState, useCallback} from 'react';
 import ReactDOM from 'react-dom';
 import Header from './components/shared/Header/Header';
 import Uploader from './components/Uploader/Uploader';
+import { API_URL } from './config';
+import { handleResponse } from './helpers';
 import TableContents from './components/TableContents/TableContents';
+import Loading from './components/shared/Loading/Loading';
 import {BrowserRouter} from 'react-router-dom';
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 const App = () => {
-    const [fileContents, setFileContents] = useState([]);
-
-    const showFileContents = () => {
-        if (fileContents.length == 0){
-            return
-            // return (
-            //     <div>
-            //         Not able to extract document contents
-            //     </div>
-            // )
+    const [fileList, setFileList] = useState([]);
+    const [fileContents, setFileContents] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+  
+    // 👇 files is not an array, but it's iterable, spread to get an array of files
+    const files = fileList ? [...fileList] : [];
+  
+    const handleUploadClick = () => {
+        setError(null)
+        if (fileList.length == 0) {
+            setError("No Selected file")
+            return;
         }
-        return (
-            <div>
-            <table className="table table-hover">
-                <thead>
-                <tr>
-                    <th>File Name</th>
-                    <th>Invoice number</th>
-                    <th>Provider name</th>
-                    <th>Customer name</th>
-                    <th>Invoice date</th>
-                    <th>Due date</th>
-                    <th>Tax%</th>
-                    <th>Tax amount</th>
-                    <th>Net amount</th>
-                    <th>Gross amount</th>
-                    <th>Currency</th>
-                </tr>
-                </thead>
+        
+        // 👇 Create new FormData object and append files
+        const data = new FormData();
+        files.forEach((file, i) => {
+            data.append(`file`, file);
+        });
+        // 👇 Uploading the files using the fetch API to the server
+        setIsLoading(true)
+        
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`${API_URL}`, {
+                    method: 'POST',
+                    body: data,
+                });
+                if (!response.ok || !response.body) {
+                    throw response.statusText;
+                }
+        
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                var responseText = '';
+                const newFileContents = {};
+        
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        setIsLoading(false);
+                        break;
+                    }
+        
+                    const decodedChunk = decoder.decode(value, { stream: true });
+                    responseText = responseText.concat(decodedChunk);
+                    responseText.split("\n").map(text => {
+                        try {
+                            const obj = JSON.parse(text);
+                            newFileContents[obj.name] = obj.contents;
+                            setFileContents(newFileContents)
+                        } catch (error) {}
+                    });
+                }
+            } catch (error) {
+                setIsLoading(false);
+                // Handle other errors
+            }
+        };
 
-                <tbody>
-                { Object.keys(fileContents).map((filename) => (
-                    <tr>
-                        <td>
-                            {filename}
-                        </td>
-                        <td>
-                            {fileContents[filename]['Invoice number']}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Provider name"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Customer name"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Invoice date"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Due date"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Tax%"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Tax amount"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Net amount"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Gross Amount"]}
-                        </td>
-                        <td>
-                            {fileContents[filename]["Currency"]}
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-                
-            </table>
-            </div>
-        )
-    }
+        fetchData();
+
+
+        // fetch(`${API_URL}`, {
+        //     method: 'POST',
+        //     body: data,
+        // })
+        // .then(handleResponse)
+        // .then((response) => {
+        //     setFileContents(response);
+        //     setIsLoading(false)
+        // })
+        // .catch((error) => {
+        //     setIsLoading(false)
+        //     setError(error.errorMessage)
+        // });
+    };
 
     return (
         <BrowserRouter>
             <div>
                 <Header></Header>
-                <Uploader setFileContents={setFileContents}/>
-                {showFileContents()}
+                <Uploader setFileList={setFileList} handleUploadClick={handleUploadClick}/>
+                <TableContents isLoading={isLoading} fileContents={fileContents} />
             </div>
         </BrowserRouter>
     );
