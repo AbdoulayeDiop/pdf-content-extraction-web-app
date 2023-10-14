@@ -35,60 +35,61 @@ const App = () => {
         // 👇 Uploading the files using the fetch API to the server
         setIsLoading(true)
         
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`${API_URL}`, {
-                    method: 'POST',
-                    body: data,
-                });
-                if (!response.ok || !response.body) {
-                    throw response.statusText;
-                }
+        // const fetchData = async () => {
+        //     try {
+        //         const response = await fetch(`${API_URL}`, {
+        //             method: 'POST',
+        //             body: data,
+        //         });
+        //         if (!response.ok || !response.body) {
+        //             throw response.statusText;
+        //         }
         
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                var responseText = '';
-                const newFileContents = {};
+        //         const reader = response.body.getReader();
+        //         const decoder = new TextDecoder();
+        //         var responseText = '';
+        //         const newFileContents = {};
         
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) {
-                        setIsLoading(false);
-                        break;
-                    }
+        //         while (true) {
+        //             const { value, done } = await reader.read();
+        //             if (done) {
+        //                 setIsLoading(false);
+        //                 break;
+        //             }
         
-                    const decodedChunk = decoder.decode(value, { stream: true });
-                    responseText = responseText.concat(decodedChunk);
-                    responseText.split("\n").map(text => {
-                        try {
-                            const obj = JSON.parse(text);
-                            newFileContents[obj.name] = obj.contents;
-                            setFileContents(newFileContents)
-                        } catch (error) {}
-                    });
-                }
-            } catch (error) {
-                setIsLoading(false);
-                // Handle other errors
-            }
-        };
+        //             const decodedChunk = decoder.decode(value, { stream: true });
+        //             responseText = responseText.concat(decodedChunk);
+        //             responseText.split("\n").map(text => {
+        //                 try {
+        //                     const obj = JSON.parse(text);
+        //                     newFileContents[obj.name] = obj.contents;
+        //                     setFileContents(newFileContents)
+        //                 } catch (error) {
+        //                     console.log(error)
+        //                 }
+        //             });
+        //         }
+        //     } catch (error) {
+        //         setIsLoading(false);
+        //         // Handle other errors
+        //     }
+        // };
 
-        fetchData();
+        // fetchData();
 
-
-        // fetch(`${API_URL}`, {
-        //     method: 'POST',
-        //     body: data,
-        // })
-        // .then(handleResponse)
-        // .then((response) => {
-        //     setFileContents(response);
-        //     setIsLoading(false)
-        // })
-        // .catch((error) => {
-        //     setIsLoading(false)
-        //     setError(error.errorMessage)
-        // });
+        fetch(`${API_URL}`, {
+            method: 'POST',
+            body: data,
+        })
+        .then(handleResponse)
+        .then((response) => {
+            setFileContents(response);
+            setIsLoading(false)
+        })
+        .catch((error) => {
+            setIsLoading(false)
+            setError(error.errorMessage)
+        });
     };
 
     return (
@@ -96,7 +97,8 @@ const App = () => {
             <div>
                 <Header></Header>
                 <Uploader setFileList={setFileList} handleUploadClick={handleUploadClick}/>
-                <TableContents isLoading={isLoading} fileContents={fileContents} />
+                <TableContents fileContents={fileContents} />
+                {isLoading && <div className="loading-container"><Loading /></div>}
             </div>
         </BrowserRouter>
     );

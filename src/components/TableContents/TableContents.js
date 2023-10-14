@@ -2,15 +2,8 @@ import React from 'react'
 import Loading from '../shared/Loading/Loading'
 import './TableContents.css'
 
-function TableContents({isLoading, fileContents}) {
+function TableContents({fileContents}) {
     if (Object.keys(fileContents).length == 0){
-        if (isLoading) {
-            return (
-                <div>
-                    {isLoading && <div className="loading-container"><Loading /></div>}
-                </div>
-            )
-        }
         return;
     }
 
@@ -74,7 +67,6 @@ function TableContents({isLoading, fileContents}) {
             </tbody>
             
         </table>
-        {isLoading && <div className="loading-container"><Loading /></div>}
         </div>
     )
 }
