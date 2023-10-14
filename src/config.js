@@ -1,1 +1,1 @@
-export const API_URL = 'https://pdf-content-extraction-with-llm.onrender.com/stream';
+export const API_URL = 'http://16.171.38.164/stream';
